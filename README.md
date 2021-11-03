@@ -3,4 +3,5 @@ Connect 4 game using python • 2 game modes: Human vs Human, Human vs AI • Im
 
 ![](https://i.stack.imgur.com/v455k.png)
 
+2020.
 
