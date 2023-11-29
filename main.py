@@ -20,11 +20,11 @@ nbLignes = 6
 def affichage(t):
 	
 	for j in range(nbColonnes):
-		print(" ({})".format(j+1), end='')
+		print(f" ({j + 1})", end='')
 	print(" \n");
-	
+
 	for i in range(nbLignes):
-		for j in range(nbColonnes):
+		for _ in range(nbColonnes):
 			print("+---", end='')
 		print("+\n")
 		for j in range(nbColonnes):
@@ -35,7 +35,7 @@ def affichage(t):
 			else:
 				print("| . ", end=''),
 		print("|\n")
-	for j in range(nbColonnes):
+	for _ in range(nbColonnes):
 		print("+---", end='')
 	print("+\n")
 
@@ -43,21 +43,21 @@ def affichage(t):
 def jouer(t,num_j,c):
 	
 	ok = 1 #booléen qui vaut 1 si il ny a pas de probleme
-	if((c > nbColonnes-1) or (c < 0) or (c == '')):
+	if ((c > nbColonnes-1) or (c < 0) or (c == '')):
 		ok = 0
 		print(" ! Celle colonne existe pas..")
-	else:	
+	else:
 		i = 0
-		
+
 		#on fait glisser le pion
-		if((t[i][c] == 0) and (ok == 1)):
+		if ((t[i][c] == 0) and (ok == 1)):
 			while ((t[i][c] == 0) and (i < nbLignes-1)):
 				i += 1
-			
-			if not(t[i][c] == 0):
+
+			if t[i][c] != 0:
 				i -= 1
 			t[i][c] = num_j 
-			
+
 		else:
 			ok = 0
 			print(" ! Cette colonne est rempli..")
@@ -229,37 +229,33 @@ def Utility(t): #return (la recompense)
 	return val
 
 def Actions(t): #return (liste des colonnes jouable)       
-	actions=[]          
 	if Terminal_Test(t)[0] == False: #si le jeu n'est pas fini
-		for j in range(nbColonnes):
-			if (t[0][j]==0):
-				actions.append(j+1) 
-		return actions     
+		return [j+1 for j in range(nbColonnes) if (t[0][j]==0)]     
 
 # (semblable à Actions() mais utile à l'IA)
 def CoordonneesActions(t): 
-	actions=[]        
 	if Terminal_Test(t)[0] == False: #si le jeu n'est pas fini
+		actions=[]
 		for j in range(nbColonnes):
 			if (t[0][j]==0):
 				(x,y) = Tomber(1,t,j)
 				t[x][y] = 0
 				actions.append((x,y))
-				
+
 		return actions 
 
 # Tomber() : (semblable à jouer() mais utile à l'IA) avec c la colonne voulu
 def Tomber(numjoueur,t,c): #Pose le pion
 	i = 0
-	#print("*tomber* TERMINAL  : ", Terminal_Test(t))	
+	#print("*tomber* TERMINAL  : ", Terminal_Test(t))
 	if Terminal_Test(t)[0] != True:
 		while ((t[i][c] == 0) and (i < nbLignes-1)):
 			i += 1
 			#print("**t[{}][{}] : {} // {} {}".format(i,c,t[i][c],(t[i][c] == 0),(i < 5)))
-				
-		if not(t[i][c] == 0):
+
+		if t[i][c] != 0:
 			i -= 1
-		
+
 		if t[i][c] == 0:
 			t[i][c] = numjoueur
 		else:
@@ -272,46 +268,45 @@ def min_max_value4_AB(t,prof,MAXI,alpha,beta):
 		#affichage(t)
 		#print(" PROF {} // TERMINAL-TEST {} // UTILITY {} *---------------------------------*".format(prof,Terminal_Test(t)[0],Utility(t)))
 		return Utility(t)
-	
+
 	if MAXI:
 		meilleurscoremgl = -100000
 		actionspossible = CoordonneesActions(t) 
 
 		for (i,j) in actionspossible: #pour toute les actions possible
 			t[i][j] = numpion_ia #faire tomber le pion			
-			
+
 			scoreee = min_max_value4_AB(t,prof+1,False,alpha,beta) #recursion
 			#print("MAXI SCORE {} // PROF {} // ALPHA BETA {} {} **".format(scoreee ,prof+1,alpha,beta)) # affichage des infomartion (faire ça nous a donné un meilleur vision de notre code et nous a aidé au debbug)
-			
+
 			t[i][j] = 0 #remise à l'état
 			meilleurscoremgl = max([scoreee,meilleurscoremgl]) # le MAX veut maximiser sa 'recompense' donc il cherche le meilleur coup
 			if meilleurscoremgl >= beta:
 				return meilleurscoremgl
-			
+
 			alpha = max([alpha,meilleurscoremgl])
 			if alpha >= beta:
 				print("*")
 				break
-		return meilleurscoremgl
-	
 	else:
 		meilleurscoremgl = 100000
 		actionspossible = CoordonneesActions(t)
 		for (i,j) in actionspossible:
 			t[i][j] = numpion_joueur #faire tomber
-			
+
 			scoreee = min_max_value4_AB(t,prof+1,True,alpha,beta) #recursion
 			#print("MINI SCORE {} // PROF {} // ALPHA BETA {} {} **".format(scoreee ,prof+1,alpha,beta))
-			
+
 			t[i][j] = 0 #reset
 			meilleurscoremgl = min(scoreee,meilleurscoremgl)
 			if meilleurscoremgl <= alpha:
 				return meilleurscoremgl
 			beta = min([beta,meilleurscoremgl])
-			
+
 			if alpha >= beta:
 				break
-		return meilleurscoremgl
+
+	return meilleurscoremgl
 	
 		
  
@@ -346,12 +341,12 @@ def MiniMax_Decision4_AB(t):
 #a = min_max_value4(t0,0,False)
 quijoueenpremier = 1
 encore = 'y'
+modevs = 2
 while encore == 'y':
 	tour = 0 #nombre de tour, il incremente et permet de changer de joueur
 	winner = -1 # numero du joueur gagnant
-	modevs = 2 
 	game_over = False
-	
+
 	print("///////////////////////////////")
 	print("///////////////////////////////")
 	print("/////// * PUISSANCE 4 * ///////")
@@ -363,12 +358,12 @@ while encore == 'y':
 	print("///  2 - JOUER    /////////////")
 	print("///////////////////////////////")
 	print("///////////////////////////////")
-	
+
 	# Petit Menu
 	choix = 0
 	while choix < 1 or choix > 2:
 	    choix = int(input("> "))
-	    
+
 	if choix == 1:
 		print("///////////////////////////////")
 		print("//// Qui joue en premier ? ///")
@@ -376,35 +371,26 @@ while encore == 'y':
 		quijoueenpremier = 0
 		while quijoueenpremier < 1 or quijoueenpremier > 2:
 			quijoueenpremier = int(input("> "))
-		
+
 	else:
 		#Initialisation de la grille
 		tab = np.zeros((nbLignes,nbColonnes)) 
-		
+
 		# Lancement de la partie qui ne s'arretera pas tant que le jeu sera en cours (tantquil nya pas de gagnant ni match nul)
 		while (winner == -1):
 			
 			#jour actuel
-			if quijoueenpremier == 1:
-				currentplayer = 1 + (tour % 2)
-			else:
-				currentplayer = 2 - (tour % 2)
-				
-			
+			currentplayer = 1 + (tour % 2) if quijoueenpremier == 1 else 2 - (tour % 2)
 			#symboles des joueurs
-			if currentplayer == 1:
-				symbole = 'O'
-			else:
-				symbole = 'X'
-			
+			symbole = 'O' if currentplayer == 1 else 'X'
 			# A chaque tour, avant de demander au joueur suivant de jouer, on teste la grille pour savoir si il ya un gagnant ou un match nul
 			game_over,winner = Terminal_Test(tab)
-			
+
 			if (currentplayer == 2)and not(game_over): 
 				affichage(tab)
-			
+
 				print(" * ACTIONS : ", Actions(tab))
-				
+
 				#demande saisie de colonne
 				ok = 0
 				while (ok == 0):
@@ -413,21 +399,21 @@ while encore == 'y':
 					ok = jouer(tab,currentplayer,c-1)
 
 				tour += 1 #on passe au tour de lautre joueur
-				
+
 			elif (currentplayer == 1)and not(game_over):
 				print("l'IA joue...")
 				tab=MiniMax_Decision4_AB(tab)
 				tour += 1
 				#affichage(tab)
 				#print("*** {}-JOUEUR {:d} : ".format(symbole,int(currentplayer)))
-				
+
 		if winner != 0 or game_over: #si le match est fini et qu'il nya pas de match nul (donc il ya un gagnant)'
 			affichage(tab)
 			print("\n JOUEUR {:d} GAGNE LA PARTIE : ".format(winner))
-			
+
 		else:
 			print("\n MATCH NUL")
-				
+
 		print("\n\n///// RECOMMENCER UNE PARTIE ? (y/n) ")
 		encore = input("> ")
 	
